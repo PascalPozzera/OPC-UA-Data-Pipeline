@@ -15,10 +15,12 @@ OPC-UA Server → MQTT Broker → Redis/Kafka → TimescaleDB → Grafana
 |---------|------|-------------|
 | OPC-UA Server | 4840 | Machine simulation |
 | Grafana | 3000 | Dashboard (admin/admin) |
+| Redpanda Console | 8080 | Kafka monitoring UI |
 | TimescaleDB | 5432 | Time-series database |
 | MQTT Broker | 1883 | Message broker |
 | Redis | 6379 | Context store |
 | Redpanda | 9092 | Kafka-compatible streaming |
+
 
 ## Quick Start
 ```bash
