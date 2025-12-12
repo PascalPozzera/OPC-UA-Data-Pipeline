@@ -13,12 +13,5 @@ mosquitto/log/
 # Log files
 *.log
 
-# Temporary files
-extract_pdf.py
-main.py
-requirements.txt
-requirements_parsed.txt
-requirements_text.txt
-
-# Assignment PDFs (not needed for submission)
+# Assignment PDFs
 *.pdf

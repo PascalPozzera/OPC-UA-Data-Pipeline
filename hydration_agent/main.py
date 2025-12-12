@@ -1,3 +1,8 @@
+"""
+Hydration Agent
+Consumes MQTT messages, enriches them with context data from Redis 
+(operator name, last maintenance date), and forwards to Kafka.
+"""
 import os
 import json
 import logging

@@ -12,12 +12,19 @@ NAMESPACE_URI = "urn:example:pick-and-place"
 
 
 class DeviationTracker:
+    """
+    Tracks deviations between target and actual values.
+    Triggers alarms based on two rules:
+    1. Immediate alarm if deviation > 10% in a single cycle
+    2. Trend alarm if deviation > 2% for 3 consecutive cycles
+    """
     def __init__(self, percent2_threshold=2.0, percent10_threshold=10.0):
         self.t2 = percent2_threshold
         self.t10 = percent10_threshold
-        self.history: Dict[str, List[float]] = {}
+        self.history: Dict[str, List[float]] = {}  # Stores last 3 deviation values per metric
 
     def record(self, name: str, target: float, actual: float) -> Tuple[bool, str, List[float]]:
+        """Records a value and checks for deviation alarms. Returns (alarm_triggered, message, history)."""
         if target == 0:
             return False, "", []
         pct = (actual - target) / target * 100.0
@@ -34,7 +41,9 @@ class DeviationTracker:
 
 
 class MachineModel:
+    """Data model representing the Pick-and-Place machine state and parameters."""
     def __init__(self):
+        # Machine states: Running, Stopped, Error, Maintenance, Setup
         self.status = "Running"
         self.current_operation = "Loading PCB"
 
@@ -105,6 +114,7 @@ class MachineModel:
 
 
 class PickAndPlaceServer:
+    """OPC-UA Server simulating a Pick-and-Place SMT machine with realistic behavior."""
     def __init__(self):
         self.server: Optional[Server] = None
         self.idx: int = 0
@@ -398,10 +408,12 @@ class PickAndPlaceServer:
             await self.status_node.write_value(ua.Variant("Error", ua.VariantType.String))
             self.model.status = "Error"
         
-        # Auto-Recovery: If all feeders are refilled and machine is in Error, auto-resume
+        # Auto-Recovery Logic:
+        # When machine is in Error state AND all feeders have been refilled (count > 0),
+        # the machine automatically resumes Running without manual intervention.
         current_status = await self.status_node.read_value()
         if current_status == "Error" and not self._last_push:
-            # Check all feeders explicitly (await doesn't work in generator)
+            # Check all feeders explicitly (await doesn't work in generator expressions)
             all_feeders_ok = True
             for i in range(1, 5):
                 feeder_val = int(await self.nodes[f"Feeder{i:02d}Count"].read_value())

@@ -1,3 +1,8 @@
+"""
+Kafka to Database Agent
+Consumes enriched messages from Kafka and writes them to TimescaleDB.
+Handles both numeric and string values, storing them in appropriate columns.
+"""
 import os
 import json
 import logging

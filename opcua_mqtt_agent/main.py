@@ -1,3 +1,8 @@
+"""
+OPC-UA to MQTT Agent
+Subscribes to all OPC-UA variable changes and publishes them to MQTT.
+Automatically reconnects on connection failures.
+"""
 import asyncio
 import os
 import json
@@ -7,20 +12,20 @@ from typing import Any
 from asyncua import Client, Node, ua
 import paho.mqtt.client as mqtt
 
-# Configuration
+# Configuration from environment variables
 OPCUA_ENDPOINT = os.getenv("OPCUA_ENDPOINT", "opc.tcp://opcua-server:4840/pnp/")
 MQTT_BROKER = os.getenv("MQTT_BROKER", "mqtt-broker")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_TOPIC = "machine/data"
 
-# Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class SubscriptionHandler:
+    """Handles OPC-UA data change notifications and publishes to MQTT."""
     def __init__(self, mqtt_client: mqtt.Client, node_map: dict):
         self.mqtt_client = mqtt_client
-        self.node_map = node_map
+        self.node_map = node_map  # Maps NodeID to human-readable name
 
     def datachange_notification(self, node: Node, val: Any, data: ua.DataValue):
         """
