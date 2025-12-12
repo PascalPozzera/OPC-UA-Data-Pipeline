@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # --------------------------------------------------------------------------
+  # 1) OPC-UA Simulation Server
+  # --------------------------------------------------------------------------
+  opcua-server:
+    build: ./opcua_server
+    container_name: opcua-server
+    ports:
+      - "4840:4840"
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  # --------------------------------------------------------------------------
+  # 2) Message Brokers & Storage
+  # --------------------------------------------------------------------------
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    container_name: mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --node-id 0
+      - --check=false
+      - --kafka-addr PLAIN://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093
+      - --advertise-kafka-addr PLAIN://redpanda:9092,OUTSIDE://localhost:9093
+      - --pandaproxy-addr 0.0.0.0:8082
+      - --advertise-pandaproxy-addr localhost:8082
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "9644:9644"
+      - "8082:8082"
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  redpanda-console:
+    image: redpandadata/console:latest
+    container_name: redpanda-console
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_BROKERS=redpanda:9092
+    depends_on:
+      - redpanda
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: timescaledb
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=industrial_data
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  # --------------------------------------------------------------------------
+  # 3) Pipeline Agents
+  # --------------------------------------------------------------------------
+  opcua-mqtt-agent:
+    build: ./opcua_mqtt_agent
+    container_name: opcua-mqtt-agent
+    depends_on:
+      - opcua-server
+      - mqtt-broker
+    environment:
+      - OPCUA_ENDPOINT=opc.tcp://opcua-server:4840/pnp/
+      - MQTT_BROKER=mqtt-broker
+      - MQTT_PORT=1883
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  hydration-agent:
+    build: ./hydration_agent
+    container_name: hydration-agent
+    depends_on:
+      - mqtt-broker
+      - redis
+      - redpanda
+    environment:
+      - MQTT_BROKER=mqtt-broker
+      - REDIS_HOST=redis
+      - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  kafka-db-agent:
+    build: ./kafka_db_agent
+    container_name: kafka-db-agent
+    depends_on:
+      - redpanda
+      - timescaledb
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - DB_HOST=timescaledb
+      - DB_NAME=industrial_data
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+  # --------------------------------------------------------------------------
+  # 4) Visualization
+  # --------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - timescaledb
+    restart: unless-stopped
+    networks:
+      - pipeline-net
+
+networks:
+  pipeline-net:
+    driver: bridge
+
+volumes:
+  redpanda-data:
+  timescaledb-data:
+  grafana-data:

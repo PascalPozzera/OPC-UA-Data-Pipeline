@@ -1,0 +1,20 @@
+hydration-agent  | INFO:__main__:Starting Hydration Agent...
+hydration-agent  | INFO:__main__:Connected to Redis at redis
+hydration-agent  | INFO:__main__:Connecting to Kafka at redpanda:9092...
+hydration-agent  | INFO:kafka.conn:<BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=redpanda:9092 <connecting> [IPv4 ('172.18.0.5', 9092)]>: connecting to redpanda:9092 [('172.18.0.5', 9092) IPv4]
+hydration-agent  | INFO:kafka.conn:<BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=redpanda:9092 <checking_api_versions_recv> [IPv4 ('172.18.0.5', 9092)]>: Broker version identified as 2.6
+hydration-agent  | INFO:kafka.conn:<BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=redpanda:9092 <connected> [IPv4 ('172.18.0.5', 9092)]>: Connection complete.
+hydration-agent  | INFO:__main__:Connected to Kafka
+hydration-agent  | /app/main.py:95: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+hydration-agent  |   client = mqtt.Client()
+hydration-agent  | INFO:__main__:Connected to MQTT Broker with result code 0
+hydration-agent  | INFO:__main__:Starting Hydration Agent...
+hydration-agent  | INFO:__main__:Connected to Redis at redis
+hydration-agent  | INFO:__main__:Connecting to Kafka at redpanda:9092...
+hydration-agent  | INFO:kafka.conn:<BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=redpanda:9092 <connecting> [IPv4 ('172.18.0.5', 9092)]>: connecting to redpanda:9092 [('172.18.0.5', 9092) IPv4]
+hydration-agent  | INFO:kafka.conn:<BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=redpanda:9092 <checking_api_versions_recv> [IPv4 ('172.18.0.5', 9092)]>: Broker version identified as 2.6
+hydration-agent  | INFO:kafka.conn:<BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=redpanda:9092 <connected> [IPv4 ('172.18.0.5', 9092)]>: Connection complete.
+hydration-agent  | INFO:__main__:Connected to Kafka
+hydration-agent  | /app/main.py:95: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+hydration-agent  |   client = mqtt.Client()
+hydration-agent  | INFO:__main__:Connected to MQTT Broker with result code 0

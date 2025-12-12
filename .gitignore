@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+.DS_Store
+# Data volumes
+mosquitto/data/
+mosquitto/log/
