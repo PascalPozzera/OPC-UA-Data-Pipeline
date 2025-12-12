@@ -21,6 +21,8 @@ docker-compose up --build -d
 | **Redpanda Console** | http://localhost:8080 |
 | **OPC-UA Server** | opc.tcp://localhost:4840/pnp/ |
 
+> **Note**: In Grafana, change the time range to **"Last 15 minutes"** (top right corner) to see the data.
+
 ### 3. Stop all services
 ```bash
 docker-compose down -v
